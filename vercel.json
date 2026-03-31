@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-markets",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
