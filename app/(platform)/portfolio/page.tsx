@@ -16,7 +16,7 @@ export default function PortfolioPage() {
       fetch('/api/wallet').then((r) => r.json()),
     ])
     setPositions(posRes.positions ?? [])
-    setWallet(walRes)
+    if (walRes?.cash_balance !== undefined) setWallet(walRes)
     setLoading(false)
   }
 

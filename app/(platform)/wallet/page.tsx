@@ -28,9 +28,9 @@ export default function WalletPage() {
       fetch('/api/wallet').then((r) => r.json()),
       fetch('/api/wallet/transactions?limit=20').then((r) => r.json()),
     ])
-    setWallet(walRes)
+    if (walRes?.cash_balance !== undefined) setWallet(walRes)
     setTransactions(txRes.transactions ?? [])
-    if (walRes.cooldown_ends_at) {
+    if (walRes?.cooldown_ends_at) {
       setCountdown(secondsUntil(walRes.cooldown_ends_at))
     }
     setLoading(false)
@@ -121,13 +121,13 @@ export default function WalletPage() {
           <div>
             <div className="stat-label">Cash balance</div>
             <div className="text-3xl font-bold font-mono text-text-primary">
-              ${wallet?.cash_balance.toFixed(2)}
+              ${wallet?.cash_balance?.toFixed(2)}
             </div>
           </div>
           <div>
             <div className="stat-label">Total portfolio</div>
             <div className="text-3xl font-bold font-mono text-accent">
-              ${wallet?.total_portfolio_value.toFixed(2)}
+              ${wallet?.total_portfolio_value?.toFixed(2)}
             </div>
           </div>
         </div>

@@ -23,7 +23,7 @@ export default function TopNav() {
   useEffect(() => {
     fetch('/api/wallet')
       .then((r) => r.json())
-      .then(setWallet)
+      .then((data) => { if (data?.total_portfolio_value !== undefined) setWallet(data) })
       .catch(() => {})
   }, [pathname])
 

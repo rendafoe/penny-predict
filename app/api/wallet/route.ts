@@ -20,7 +20,31 @@ export async function GET() {
   ])
 
   if (walletRes.error || !walletRes.data) {
-    return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
+    // Ensure public.users row exists (FK required before wallet insert)
+    const { data: existingUser } = await service.from('users').select('id').eq('id', user.id).single()
+    if (!existingUser) {
+      const cashoutEligibleAt = new Date()
+      cashoutEligibleAt.setDate(cashoutEligibleAt.getDate() + 30)
+      const username = (user.user_metadata?.username ?? user.email!.split('@')[0]) as string
+      await service.from('users').upsert({
+        id: user.id,
+        username,
+        cashout_eligible_at: cashoutEligibleAt.toISOString(),
+        is_verified: false,
+        total_cashed_out: 0,
+      }, { onConflict: 'id' })
+    }
+
+    // Seed wallet
+    const { data: seeded } = await service
+      .from('wallets')
+      .insert({ user_id: user.id, cash_balance: 1.00, start_fresh_eligible: false, cooldown_ends_at: null, top_up_count: 0 })
+      .select('*')
+      .single()
+    if (!seeded) return NextResponse.json({ error: 'Wallet setup failed' }, { status: 500 })
+    await service.from('transactions').insert({ user_id: user.id, type: 'seed', amount: 1.00, description: 'Welcome bonus — $1.00 starting balance' })
+    const state: WalletState = { cash_balance: 1.00, open_positions_value: 0, total_portfolio_value: 1.00, start_fresh_eligible: false, cooldown_ends_at: null, top_up_count: 0 }
+    return NextResponse.json(state)
   }
 
   const wallet = walletRes.data
